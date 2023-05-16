@@ -1,0 +1,2316 @@
+[
+    {
+        "id": "7357803c4d09633b",
+        "type": "tab",
+        "label": "Project-Office",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "4ff3d7f1296afc23",
+        "type": "function",
+        "z": "7357803c4d09633b",
+        "name": "updateNewStatus",
+        "func": "var status = \"\"\n\nif (msg.payload.length == 0) {\n    console.log(\"first entry\")\n    status = \"entry\"\n}\nelse if (msg.payload.length % 2 === 0) {\n    status = \"entry\";\n    console.log(\"third entry\")\n}\nelse {\n    console.log(\"second entry\")\n    status = \"exit\"\n}\nvar empId = global.get(\"EmpId\")\nconsole.log(status)\nlet currentDate = new Date();\nlet cDate = currentDate.getFullYear() + '-' + (currentDate.getMonth() + 1) + '-' + currentDate.getDate();\nlet time = currentDate.getHours() + \":\" + currentDate.getMinutes() + \":\" + currentDate.getSeconds();\nlet ltime = currentDate.getTime()\nlet hr = currentDate.getHours()\nmsg.payload = [empId,cDate,time,hr,status]\nmsg.topic =`Insert into Attendance values($id,$date_column,$time_column,$hr,$status)`\nmsg.status = status\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 950,
+        "y": 420,
+        "wires": [
+            [
+                "3404cd83b25b5e18",
+                "a243d46695a74b5f",
+                "a714d7d757341002"
+            ]
+        ]
+    },
+    {
+        "id": "3404cd83b25b5e18",
+        "type": "sqlite",
+        "z": "7357803c4d09633b",
+        "mydb": "5f1becd9ddccee82",
+        "sqlquery": "msg.topic",
+        "sql": "",
+        "name": "",
+        "x": 1200,
+        "y": 420,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "8ca85948c79a661a",
+        "type": "function",
+        "z": "7357803c4d09633b",
+        "name": "checkLastStatus",
+        "func": "\nlet currentDate = new Date();\nlet cDate = currentDate.getFullYear() + '-' + (currentDate.getMonth() + 1) + '-' + currentDate.getDate();\n\n// let ctime = currentDate.getHours() + \":\" + currentDate.getMinutes() + \":\" + currentDate.getSeconds();\nmsg.payload = [msg.payload, cDate]\nmsg.topic= `select * from Attendance where EmpId=$id and  date_column =$cDate`\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 280,
+        "y": 420,
+        "wires": [
+            [
+                "e0ecddbb93ebaad9"
+            ]
+        ]
+    },
+    {
+        "id": "e0ecddbb93ebaad9",
+        "type": "sqlite",
+        "z": "7357803c4d09633b",
+        "mydb": "5f1becd9ddccee82",
+        "sqlquery": "msg.topic",
+        "sql": "",
+        "name": "",
+        "x": 490,
+        "y": 420,
+        "wires": [
+            [
+                "8f06eb8839591d39"
+            ]
+        ]
+    },
+    {
+        "id": "629f1917cd102a27",
+        "type": "function",
+        "z": "7357803c4d09633b",
+        "name": "getID",
+        "func": "global.set(\"person\", \"sunita\")\nvar EmpId= msg.payload\nmsg.payload = EmpId;\nglobal.set(\"EmpId\",EmpId)\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 110,
+        "y": 420,
+        "wires": [
+            [
+                "8ca85948c79a661a"
+            ]
+        ]
+    },
+    {
+        "id": "8f06eb8839591d39",
+        "type": "function",
+        "z": "7357803c4d09633b",
+        "name": "resultOfLastStatus",
+        "func": "msg.topic = \"result\"\nmsg.payload = msg.payload\nconsole.log(msg.payload.length)\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 710,
+        "y": 420,
+        "wires": [
+            [
+                "4ff3d7f1296afc23"
+            ]
+        ]
+    },
+    {
+        "id": "9a6d8f37f34105f3",
+        "type": "inject",
+        "z": "7357803c4d09633b",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 60,
+        "y": 1000,
+        "wires": [
+            [
+                "43dbeef5ba5caf0b"
+            ]
+        ]
+    },
+    {
+        "id": "43dbeef5ba5caf0b",
+        "type": "function",
+        "z": "7357803c4d09633b",
+        "name": "Entryemployee",
+        "func": "msg.topic = `select EmpId from attendance group by date_column,EmpId having count(status)%2 == 1`\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 240,
+        "y": 1000,
+        "wires": [
+            [
+                "54b551b7c1823592"
+            ]
+        ]
+    },
+    {
+        "id": "54b551b7c1823592",
+        "type": "sqlite",
+        "z": "7357803c4d09633b",
+        "mydb": "5f1becd9ddccee82",
+        "sqlquery": "msg.topic",
+        "sql": "",
+        "name": "",
+        "x": 440,
+        "y": 1000,
+        "wires": [
+            [
+                "2923a86e4f4f928e"
+            ]
+        ]
+    },
+    {
+        "id": "2923a86e4f4f928e",
+        "type": "function",
+        "z": "7357803c4d09633b",
+        "name": "getIdsOfEmployeeInside",
+        "func": "var insideOffice= []\narr = msg.payload\nfor (let i = 0; i < msg.payload.length; i++) {\n    insideOffice.push(arr[i].EmpID);\n}\nvar arr = insideOffice.toString()\nmsg.payload = [insideOffice]\n// console.log(msg.payload)\n// console.log(`what is this ${insideOffice}`)\n//query to get the contact no of employees inside office\nmsg.topic = `select contact_no from Employee where EmpId in ( ${insideOffice.join(',')})`\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 670,
+        "y": 1000,
+        "wires": [
+            [
+                "6dbc0db4eb17314b"
+            ]
+        ]
+    },
+    {
+        "id": "6dbc0db4eb17314b",
+        "type": "sqlite",
+        "z": "7357803c4d09633b",
+        "mydb": "5f1becd9ddccee82",
+        "sqlquery": "msg.topic",
+        "sql": "",
+        "name": "",
+        "x": 920,
+        "y": 1000,
+        "wires": [
+            [
+                "db5566875b0d47d7"
+            ]
+        ]
+    },
+    {
+        "id": "db5566875b0d47d7",
+        "type": "function",
+        "z": "7357803c4d09633b",
+        "name": "sendMessageToinsidePeople",
+        "func": "var contacts =[]\nvar arr = msg.payload\nfor (let i = 0; i < arr.length; i++) {\n    contacts.push(arr[i].contact_no);\n}\nvar nums= contacts[0]\nconsole.log(contacts)\nmsg.topic=contacts[0]\nmsg.payload= \"Office time is over, Please pack your bags\"\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1180,
+        "y": 1000,
+        "wires": [
+            [
+                "f2256b052be35926"
+            ]
+        ]
+    },
+    {
+        "id": "f2256b052be35926",
+        "type": "twilio out",
+        "z": "7357803c4d09633b",
+        "twilio": "951e49c911dbaec6",
+        "twilioType": "sms",
+        "url": "",
+        "number": "",
+        "name": "",
+        "x": 1410,
+        "y": 1000,
+        "wires": []
+    },
+    {
+        "id": "23527d370880b19f",
+        "type": "camerapi-takephoto",
+        "z": "7357803c4d09633b",
+        "filemode": "0",
+        "filename": "",
+        "filedefpath": "1",
+        "filepath": "",
+        "fileformat": "jpeg",
+        "resolution": "8",
+        "rotation": "0",
+        "fliph": "0",
+        "flipv": "0",
+        "brightness": "50",
+        "contrast": "0",
+        "sharpness": "0",
+        "quality": "80",
+        "imageeffect": "none",
+        "exposuremode": "auto",
+        "iso": "0",
+        "agcwait": "1.0",
+        "led": "0",
+        "awb": "auto",
+        "name": "",
+        "x": 520,
+        "y": 320,
+        "wires": [
+            [
+                "237811ab0cb72373"
+            ]
+        ]
+    },
+    {
+        "id": "237811ab0cb72373",
+        "type": "function",
+        "z": "7357803c4d09633b",
+        "name": "setHeaders",
+        "func": "msg.headers = {};\nmsg.headers['Content-Type'] = 'application/octet-stream';\nmsg.headers['Prediction-Key'] = '41b43f1d7b2447e8a3021a446f2c0442';\nreturn msg; ",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 750,
+        "y": 320,
+        "wires": [
+            [
+                "421cb6d0d8e7606a"
+            ]
+        ]
+    },
+    {
+        "id": "421cb6d0d8e7606a",
+        "type": "http request",
+        "z": "7357803c4d09633b",
+        "name": "",
+        "method": "POST",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "https://iotproject-prediction.cognitiveservices.azure.com/customvision/v3.0/Prediction/b78a900e-f480-4662-9169-ae920411a1b0/classify/iterations/Iteration2/image",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "basic",
+        "senderr": false,
+        "headers": [],
+        "x": 930,
+        "y": 320,
+        "wires": [
+            [
+                "cde544c1b1544a0e"
+            ]
+        ]
+    },
+    {
+        "id": "67bac89ea907f2d7",
+        "type": "debug",
+        "z": "7357803c4d09633b",
+        "name": "debug 54",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1480,
+        "y": 320,
+        "wires": []
+    },
+    {
+        "id": "c094137d6149fba7",
+        "type": "grove digital sensor",
+        "z": "7357803c4d09633b",
+        "name": "Distance",
+        "board": "69ad816514f35c84",
+        "sensor": "ultrasonic",
+        "repeat": "2",
+        "pin": "5",
+        "x": 120,
+        "y": 320,
+        "wires": [
+            [
+                "89b239946091cdcd",
+                "0bd90be9b1972639"
+            ]
+        ]
+    },
+    {
+        "id": "89b239946091cdcd",
+        "type": "function",
+        "z": "7357803c4d09633b",
+        "name": "cameraOn",
+        "func": "if (msg.payload<30){\n    msg.payload = true\n    return msg;\n}\n",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 310,
+        "y": 320,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "069ce39a6ae0e414",
+        "type": "inject",
+        "z": "7357803c4d09633b",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 400,
+        "y": 260,
+        "wires": [
+            [
+                "23527d370880b19f"
+            ]
+        ]
+    },
+    {
+        "id": "cde544c1b1544a0e",
+        "type": "function",
+        "z": "7357803c4d09633b",
+        "name": "getEmployeeId",
+        "func": "\nlet person = msg.payload[\"predictions\"][0]['tagName']\nmsg.person = person\nglobal.set(\"person\",person)\nif(person!='Negative'){\n    msg.payload = [person]\n    msg.topic=`Select EmpID from Employee where name = $person`;\n}\nreturn msg;\n",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1100,
+        "y": 320,
+        "wires": [
+            [
+                "1701535961d318eb"
+            ]
+        ]
+    },
+    {
+        "id": "1701535961d318eb",
+        "type": "sqlite",
+        "z": "7357803c4d09633b",
+        "mydb": "5f1becd9ddccee82",
+        "sqlquery": "msg.topic",
+        "sql": "",
+        "name": "",
+        "x": 1300,
+        "y": 320,
+        "wires": [
+            [
+                "67bac89ea907f2d7"
+            ]
+        ]
+    },
+    {
+        "id": "352ec69591d98ce5",
+        "type": "sqlite",
+        "z": "7357803c4d09633b",
+        "mydb": "5f1becd9ddccee82",
+        "sqlquery": "msg.topic",
+        "sql": "",
+        "name": "Sqlite",
+        "x": 2090,
+        "y": 480,
+        "wires": [
+            [
+                "0148bf1a177f5747"
+            ]
+        ]
+    },
+    {
+        "id": "aa0d08c992ed9b02",
+        "type": "inject",
+        "z": "7357803c4d09633b",
+        "name": "selectFromAttendance",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "select * from Attendance;",
+        "payload": "",
+        "payloadType": "str",
+        "x": 1860,
+        "y": 480,
+        "wires": [
+            [
+                "352ec69591d98ce5"
+            ]
+        ]
+    },
+    {
+        "id": "0148bf1a177f5747",
+        "type": "debug",
+        "z": "7357803c4d09633b",
+        "name": "debug 34",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 2260,
+        "y": 480,
+        "wires": []
+    },
+    {
+        "id": "22998df27929841e",
+        "type": "function",
+        "z": "7357803c4d09633b",
+        "name": "create Attendance",
+        "func": "// msg.topic = ` create table Attendance(EmpID integer NOT NULL,date_coumn DATE DEFAULT(date('now')),timestamp DATE DEFAULT (date('now','localtime')),status varchar ,FOREIGN KEY(EmpID) REFERENCES Employee(EmpID) ON DELETE CASCADE)`\nmsg.topic =`create table Attendance(EmpID integer NOT NULL,date_column DATE DEFAULT current_timestamp,time_column Time DEFAULT current_timestamp,hr_column Time DEFAULT current_timestamp,status varchar ,FOREIGN KEY(EmpID) REFERENCES Employee(EmpID) ON DELETE CASCADE);`\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 2030,
+        "y": 400,
+        "wires": [
+            [
+                "d4b0ef2dfded16db"
+            ]
+        ]
+    },
+    {
+        "id": "d4b0ef2dfded16db",
+        "type": "sqlite",
+        "z": "7357803c4d09633b",
+        "mydb": "5f1becd9ddccee82",
+        "sqlquery": "msg.topic",
+        "sql": "",
+        "name": "",
+        "x": 2270,
+        "y": 400,
+        "wires": [
+            [
+                "a7090ccd54108d97"
+            ]
+        ]
+    },
+    {
+        "id": "8b0ea8c2a1f07f32",
+        "type": "inject",
+        "z": "7357803c4d09633b",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 1820,
+        "y": 400,
+        "wires": [
+            [
+                "22998df27929841e"
+            ]
+        ]
+    },
+    {
+        "id": "a7090ccd54108d97",
+        "type": "debug",
+        "z": "7357803c4d09633b",
+        "name": "debug 36",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 2540,
+        "y": 400,
+        "wires": []
+    },
+    {
+        "id": "643df4ab3b9fa9e6",
+        "type": "function",
+        "z": "7357803c4d09633b",
+        "name": "create Employee",
+        "func": " msg.topic = `create table Employee(EmpID INTEGER  NOT NULL PRIMARY KEY AUTOINCREMENT, name varchar(30),contact_no integer);`\n//msg.topic =`create table Employee(EmpID INTEGER  NOT NULL PRIMARY KEY AUTOINCREMENT, name varchar(30));`\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 2050,
+        "y": 220,
+        "wires": [
+            [
+                "ec3bea33bcd336e5"
+            ]
+        ]
+    },
+    {
+        "id": "ec3bea33bcd336e5",
+        "type": "sqlite",
+        "z": "7357803c4d09633b",
+        "mydb": "5f1becd9ddccee82",
+        "sqlquery": "msg.topic",
+        "sql": "",
+        "name": "",
+        "x": 2290,
+        "y": 220,
+        "wires": [
+            [
+                "6e6ff4c5e3219a39"
+            ]
+        ]
+    },
+    {
+        "id": "01fd5d60996374ab",
+        "type": "inject",
+        "z": "7357803c4d09633b",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 1840,
+        "y": 220,
+        "wires": [
+            [
+                "643df4ab3b9fa9e6"
+            ]
+        ]
+    },
+    {
+        "id": "6e6ff4c5e3219a39",
+        "type": "debug",
+        "z": "7357803c4d09633b",
+        "name": "debug 55",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 2560,
+        "y": 220,
+        "wires": []
+    },
+    {
+        "id": "3d969d86dfd2fe3d",
+        "type": "sqlite",
+        "z": "7357803c4d09633b",
+        "mydb": "5f1becd9ddccee82",
+        "sqlquery": "msg.topic",
+        "sql": "",
+        "name": "Sqlite",
+        "x": 2710,
+        "y": 500,
+        "wires": [
+            [
+                "fec20ca003df310a"
+            ]
+        ]
+    },
+    {
+        "id": "61b2cd38117d4880",
+        "type": "inject",
+        "z": "7357803c4d09633b",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "Drop Table Attendance;",
+        "payload": "",
+        "payloadType": "str",
+        "x": 2480,
+        "y": 480,
+        "wires": [
+            [
+                "3d969d86dfd2fe3d"
+            ]
+        ]
+    },
+    {
+        "id": "fec20ca003df310a",
+        "type": "debug",
+        "z": "7357803c4d09633b",
+        "name": "debug 56",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 2860,
+        "y": 500,
+        "wires": []
+    },
+    {
+        "id": "59c32d810e5ca850",
+        "type": "inject",
+        "z": "7357803c4d09633b",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "5",
+        "crontab": "",
+        "once": true,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "str",
+        "x": 1810,
+        "y": 580,
+        "wires": [
+            [
+                "0a0e871ad5419552"
+            ]
+        ]
+    },
+    {
+        "id": "d9f71ea8d6e3cb5c",
+        "type": "sqlite",
+        "z": "7357803c4d09633b",
+        "mydb": "5f1becd9ddccee82",
+        "sqlquery": "msg.topic",
+        "sql": "",
+        "name": "",
+        "x": 2200,
+        "y": 580,
+        "wires": [
+            [
+                "365b6cc5d6c0a029"
+            ]
+        ]
+    },
+    {
+        "id": "0a0e871ad5419552",
+        "type": "function",
+        "z": "7357803c4d09633b",
+        "name": "getPrsentees",
+        "func": "let currentDate = new Date();\nlet cDate = currentDate.getFullYear() + '-' + (currentDate.getMonth() + 1) + '-' + currentDate.getDate();\n\nmsg.topic = `SELECT COUNT(DISTINCT(EmpID)) AS presentees FROM Attendance  WHERE date_column = $cDate;`\nmsg.payload = [cDate]\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1990,
+        "y": 580,
+        "wires": [
+            [
+                "d9f71ea8d6e3cb5c"
+            ]
+        ]
+    },
+    {
+        "id": "bd57b60c075471f9",
+        "type": "inject",
+        "z": "7357803c4d09633b",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "5",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "str",
+        "x": 1810,
+        "y": 660,
+        "wires": [
+            [
+                "5eba93aca1918696"
+            ]
+        ]
+    },
+    {
+        "id": "6a78e27e05d0d7e6",
+        "type": "sqlite",
+        "z": "7357803c4d09633b",
+        "mydb": "5f1becd9ddccee82",
+        "sqlquery": "msg.topic",
+        "sql": "",
+        "name": "",
+        "x": 2200,
+        "y": 660,
+        "wires": [
+            [
+                "a3187aa5b86dc5d2"
+            ]
+        ]
+    },
+    {
+        "id": "5eba93aca1918696",
+        "type": "function",
+        "z": "7357803c4d09633b",
+        "name": "getTotalEmployee",
+        "func": "let currentDate = new Date();\nlet cDate = currentDate.getFullYear() + '-' + (currentDate.getMonth() + 1) + '-' + currentDate.getDate();\n\nmsg.topic = `SELECT COUNT(EmpID) AS total_emp FROM Employee ;`\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1990,
+        "y": 660,
+        "wires": [
+            [
+                "6a78e27e05d0d7e6"
+            ]
+        ]
+    },
+    {
+        "id": "365b6cc5d6c0a029",
+        "type": "function",
+        "z": "7357803c4d09633b",
+        "name": "function 54",
+        "func": "msg.topic = \"presentees\"\nvar presentees= msg.payload[0].presentees\nglobal.set(\"presentees\",presentees)\nmsg.payload = presentees;\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 2390,
+        "y": 580,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "a3187aa5b86dc5d2",
+        "type": "function",
+        "z": "7357803c4d09633b",
+        "name": "function 55",
+        "func": "\nvar total_emp = msg.payload[0].total_emp\nglobal.set(\"total_emp\",total_emp)\nmsg.payload = total_emp;\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 2390,
+        "y": 660,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "3fb843062d0c9b58",
+        "type": "function",
+        "z": "7357803c4d09633b",
+        "name": "getAbsentees",
+        "func": "var absentees = global.get('total_emp') - global.get('presentees')\nconsole.log(global.get(\"total_emp\"))\nmsg.payload = absentees\nglobal.set(\"absentees\",absentees)\nreturn msg",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 2000,
+        "y": 760,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "b76eb0eeb7fb08c2",
+        "type": "inject",
+        "z": "7357803c4d09633b",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "5",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 1830,
+        "y": 760,
+        "wires": [
+            [
+                "3fb843062d0c9b58"
+            ]
+        ]
+    },
+    {
+        "id": "eaf412b25719b04a",
+        "type": "inject",
+        "z": "7357803c4d09633b",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "str",
+        "x": 1810,
+        "y": 860,
+        "wires": [
+            [
+                "8799d5021d9ba23e"
+            ]
+        ]
+    },
+    {
+        "id": "37019b8c0784ad9e",
+        "type": "sqlite",
+        "z": "7357803c4d09633b",
+        "mydb": "5f1becd9ddccee82",
+        "sqlquery": "msg.topic",
+        "sql": "",
+        "name": "",
+        "x": 2160,
+        "y": 860,
+        "wires": [
+            [
+                "b4d09fb2adeaf428"
+            ]
+        ]
+    },
+    {
+        "id": "8799d5021d9ba23e",
+        "type": "function",
+        "z": "7357803c4d09633b",
+        "name": "getaverage",
+        "func": "let currentDate = new Date();\nlet cDate = currentDate.getFullYear() + '-' + (currentDate.getMonth() + 1) + '-' + currentDate.getDate();\nmsg.payload = [cDate]\n// msg.topic = `select EmpId,Count(status) as no_of_entry from attendance group by date_column,EmpId`\nmsg.topic = `select count(status) as avg_exit_from_office from Attendance where date_column = $cDate`\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1970,
+        "y": 860,
+        "wires": [
+            [
+                "37019b8c0784ad9e"
+            ]
+        ]
+    },
+    {
+        "id": "b4d09fb2adeaf428",
+        "type": "function",
+        "z": "7357803c4d09633b",
+        "name": "function 57",
+        "func": "\nvar total_no_of_status_in_a_day = msg.payload[0].avg_exit_from_office\nvar avg_status = (total_no_of_status_in_a_day/global.get(\"presentees\"))\nvar avg_exit = avg_status/2\n\n\nmsg.payload = avg_exit\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 2350,
+        "y": 860,
+        "wires": [
+            [
+                "bc2e0ddb8c616892"
+            ]
+        ]
+    },
+    {
+        "id": "bc2e0ddb8c616892",
+        "type": "debug",
+        "z": "7357803c4d09633b",
+        "name": "debug 61",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 2520,
+        "y": 860,
+        "wires": []
+    },
+    {
+        "id": "c0faa21af7fe330b",
+        "type": "inject",
+        "z": "7357803c4d09633b",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "5",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "str",
+        "x": 1810,
+        "y": 960,
+        "wires": [
+            [
+                "6af5b40ea8852e35"
+            ]
+        ]
+    },
+    {
+        "id": "dbc5e5afe7376e0c",
+        "type": "sqlite",
+        "z": "7357803c4d09633b",
+        "mydb": "5f1becd9ddccee82",
+        "sqlquery": "msg.topic",
+        "sql": "",
+        "name": "",
+        "x": 2260,
+        "y": 960,
+        "wires": [
+            [
+                "4914fa0ecb2d3dbd",
+                "b603904c8c9f09ae"
+            ]
+        ]
+    },
+    {
+        "id": "6af5b40ea8852e35",
+        "type": "function",
+        "z": "7357803c4d09633b",
+        "name": "lastEnteredEmployee",
+        "func": "let currentDate = new Date();\nlet cDate = currentDate.getFullYear() + '-' + (currentDate.getMonth() + 1) + '-' + currentDate.getDate();\nmsg.payload = [cDate]\nmsg.topic = `Select name from Employee where EmpID = (SELECT EmpID from Attendance where status =\"entry\" and date_column = $cDate order by time_column desc limit 1);`\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 2040,
+        "y": 960,
+        "wires": [
+            [
+                "dbc5e5afe7376e0c"
+            ]
+        ]
+    },
+    {
+        "id": "2ed03721214e717e",
+        "type": "inject",
+        "z": "7357803c4d09633b",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "1",
+        "payloadType": "num",
+        "x": 130,
+        "y": 380,
+        "wires": [
+            [
+                "629f1917cd102a27"
+            ]
+        ]
+    },
+    {
+        "id": "42a8998ed00a78a9",
+        "type": "inject",
+        "z": "7357803c4d09633b",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "5",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "str",
+        "x": 1810,
+        "y": 1040,
+        "wires": [
+            [
+                "144e29f6ea2812e2"
+            ]
+        ]
+    },
+    {
+        "id": "0027fce8de53e75c",
+        "type": "sqlite",
+        "z": "7357803c4d09633b",
+        "mydb": "5f1becd9ddccee82",
+        "sqlquery": "msg.topic",
+        "sql": "",
+        "name": "",
+        "x": 2260,
+        "y": 1040,
+        "wires": [
+            [
+                "b31ed56586e17b81",
+                "9d16f345a3704dfd"
+            ]
+        ]
+    },
+    {
+        "id": "144e29f6ea2812e2",
+        "type": "function",
+        "z": "7357803c4d09633b",
+        "name": "lastExitedEmployee",
+        "func": "let currentDate = new Date();\nlet cDate = currentDate.getFullYear() + '-' + (currentDate.getMonth() + 1) + '-' + currentDate.getDate();\nmsg.payload =[cDate]\nmsg.topic = `Select name from Employee where EmpID = (SELECT EmpID from Attendance where status = \"exit\" and date_column = $cDate order by time_column desc limit 1);`\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 2030,
+        "y": 1040,
+        "wires": [
+            [
+                "0027fce8de53e75c"
+            ]
+        ]
+    },
+    {
+        "id": "6e4bf094c6e61029",
+        "type": "ui_chart",
+        "z": "7357803c4d09633b",
+        "name": "Attendance Chart",
+        "group": "4c7ffeb7dc3854ed",
+        "order": 1,
+        "width": 5,
+        "height": 5,
+        "label": "",
+        "chartType": "bar",
+        "legend": "true",
+        "xformat": "HH:mm:ss",
+        "interpolate": "linear",
+        "nodata": "",
+        "dot": false,
+        "ymin": "",
+        "ymax": "",
+        "removeOlder": 1,
+        "removeOlderPoints": "",
+        "removeOlderUnit": "3600",
+        "cutout": 0,
+        "useOneColor": false,
+        "useUTC": false,
+        "colors": [
+            "#1f77b4",
+            "#aec7e8",
+            "#ff7f0e",
+            "#2ca02c",
+            "#98df8a",
+            "#d62728",
+            "#ff9896",
+            "#9467bd",
+            "#c5b0d5"
+        ],
+        "outputs": 1,
+        "useDifferentColor": false,
+        "className": "",
+        "x": 4090,
+        "y": 620,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "19438d685def055f",
+        "type": "function",
+        "z": "7357803c4d09633b",
+        "name": "createAttendanceBarChart",
+        "func": "//create chart of Attendance\nmsg = {\n    payload: [\n        {\n            labels: [\"Present\", \"Absent\"],\n            data:[[global.get(\"presentees\"), global.get(\"absentees\")]],\n            series: [\"Attendance\"]\n        }]\n            \n}\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 3800,
+        "y": 620,
+        "wires": [
+            [
+                "6e4bf094c6e61029"
+            ]
+        ]
+    },
+    {
+        "id": "90bdde984bcadd0e",
+        "type": "inject",
+        "z": "7357803c4d09633b",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "5",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 3550,
+        "y": 620,
+        "wires": [
+            [
+                "19438d685def055f"
+            ]
+        ]
+    },
+    {
+        "id": "4914fa0ecb2d3dbd",
+        "type": "ui_text",
+        "z": "7357803c4d09633b",
+        "group": "66e2ae3d5236b683",
+        "order": 1,
+        "width": 6,
+        "height": 2,
+        "name": "Recently Entered",
+        "label": "Recently Entered",
+        "format": "{{msg.payload[0].name}}",
+        "layout": "row-spread",
+        "className": "",
+        "x": 2530,
+        "y": 960,
+        "wires": []
+    },
+    {
+        "id": "b31ed56586e17b81",
+        "type": "debug",
+        "z": "7357803c4d09633b",
+        "name": "debug 62",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 2540,
+        "y": 1120,
+        "wires": []
+    },
+    {
+        "id": "5646d1ced2540557",
+        "type": "comment",
+        "z": "7357803c4d09633b",
+        "name": "get the no.of present Employees for the day",
+        "info": "",
+        "x": 1910,
+        "y": 540,
+        "wires": []
+    },
+    {
+        "id": "ea8cb0b5e2fbd736",
+        "type": "comment",
+        "z": "7357803c4d09633b",
+        "name": "get the no.total  present Employees in the office",
+        "info": "",
+        "x": 1920,
+        "y": 620,
+        "wires": []
+    },
+    {
+        "id": "f1ee48ed6593f9e0",
+        "type": "comment",
+        "z": "7357803c4d09633b",
+        "name": "create table Employee",
+        "info": "",
+        "x": 1820,
+        "y": 180,
+        "wires": []
+    },
+    {
+        "id": "9d1c489164ad444a",
+        "type": "comment",
+        "z": "7357803c4d09633b",
+        "name": "create table Attendance",
+        "info": "",
+        "x": 1840,
+        "y": 360,
+        "wires": []
+    },
+    {
+        "id": "14c12e1384d23e8c",
+        "type": "comment",
+        "z": "7357803c4d09633b",
+        "name": "ist all entries in Attendance",
+        "info": "",
+        "x": 1850,
+        "y": 440,
+        "wires": []
+    },
+    {
+        "id": "c7329eadbc6fd7ba",
+        "type": "comment",
+        "z": "7357803c4d09633b",
+        "name": "get the no.of absent Employees for the day",
+        "info": "",
+        "x": 1900,
+        "y": 720,
+        "wires": []
+    },
+    {
+        "id": "9a786318d12901bc",
+        "type": "inject",
+        "z": "7357803c4d09633b",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "str",
+        "x": 1810,
+        "y": 300,
+        "wires": [
+            [
+                "ccf8b88092c726fb"
+            ]
+        ]
+    },
+    {
+        "id": "c663193d9fe1c9e6",
+        "type": "sqlite",
+        "z": "7357803c4d09633b",
+        "mydb": "5f1becd9ddccee82",
+        "sqlquery": "msg.topic",
+        "sql": "",
+        "name": "",
+        "x": 2220,
+        "y": 300,
+        "wires": [
+            [
+                "c0ccfe44e0895548"
+            ]
+        ]
+    },
+    {
+        "id": "ccf8b88092c726fb",
+        "type": "function",
+        "z": "7357803c4d09633b",
+        "name": "Insert Employee",
+        "func": "msg.topic = `INSERT INTO Employee(name, contact_no) VALUES ($name, $contact_no)`\nmsg.payload = [\"Moon\", 4254695801]\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1980,
+        "y": 300,
+        "wires": [
+            [
+                "c663193d9fe1c9e6"
+            ]
+        ]
+    },
+    {
+        "id": "ac6851a0f051336b",
+        "type": "comment",
+        "z": "7357803c4d09633b",
+        "name": "Inserts Employee into Databse",
+        "info": "",
+        "x": 1870,
+        "y": 260,
+        "wires": []
+    },
+    {
+        "id": "f07dbf263cf45cc4",
+        "type": "comment",
+        "z": "7357803c4d09633b",
+        "name": "create bargraph for todays attendance",
+        "info": "",
+        "x": 3610,
+        "y": 580,
+        "wires": []
+    },
+    {
+        "id": "b603904c8c9f09ae",
+        "type": "debug",
+        "z": "7357803c4d09633b",
+        "name": "debug 66",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 2480,
+        "y": 920,
+        "wires": []
+    },
+    {
+        "id": "503d5df80a5948e7",
+        "type": "comment",
+        "z": "7357803c4d09633b",
+        "name": "checks the no of Employee inside the office and turns on light if atleast one person is inside office",
+        "info": "",
+        "x": 370,
+        "y": 480,
+        "wires": []
+    },
+    {
+        "id": "0bd90be9b1972639",
+        "type": "ui_chart",
+        "z": "7357803c4d09633b",
+        "name": "",
+        "group": "1461091383aac6f5",
+        "order": 1,
+        "width": 18,
+        "height": 7,
+        "label": "Current Distance",
+        "chartType": "line",
+        "legend": "false",
+        "xformat": "HH:mm:ss",
+        "interpolate": "linear",
+        "nodata": "",
+        "dot": true,
+        "ymin": "0",
+        "ymax": "100",
+        "removeOlder": "1",
+        "removeOlderPoints": "50",
+        "removeOlderUnit": "60",
+        "cutout": 0,
+        "useOneColor": false,
+        "useUTC": false,
+        "colors": [
+            "#1f77b4",
+            "#aec7e8",
+            "#ff7f0e",
+            "#2ca02c",
+            "#98df8a",
+            "#d62728",
+            "#ff9896",
+            "#9467bd",
+            "#c5b0d5"
+        ],
+        "outputs": 1,
+        "useDifferentColor": false,
+        "className": "",
+        "x": 130,
+        "y": 260,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "5800c08a572d34c0",
+        "type": "comment",
+        "z": "7357803c4d09633b",
+        "name": "getLastEnteredEmployee",
+        "info": "",
+        "x": 1850,
+        "y": 920,
+        "wires": []
+    },
+    {
+        "id": "6063c8d097ea403f",
+        "type": "comment",
+        "z": "7357803c4d09633b",
+        "name": "getLastExitedEmployee",
+        "info": "",
+        "x": 1840,
+        "y": 1000,
+        "wires": []
+    },
+    {
+        "id": "d493af1bcbaf3ac3",
+        "type": "ui_chart",
+        "z": "7357803c4d09633b",
+        "name": "Status Chart",
+        "group": "9e7777ab31d79853",
+        "order": 1,
+        "width": 6,
+        "height": 5,
+        "label": "",
+        "chartType": "bar",
+        "legend": "true",
+        "xformat": "HH:mm:ss",
+        "interpolate": "linear",
+        "nodata": "",
+        "dot": false,
+        "ymin": "0",
+        "ymax": "10",
+        "removeOlder": 1,
+        "removeOlderPoints": "",
+        "removeOlderUnit": "3600",
+        "cutout": 0,
+        "useOneColor": false,
+        "useUTC": false,
+        "colors": [
+            "#1f77b4",
+            "#aec7e8",
+            "#ff7f0e",
+            "#2ca02c",
+            "#98df8a",
+            "#d62728",
+            "#ff9896",
+            "#9467bd",
+            "#c5b0d5"
+        ],
+        "outputs": 1,
+        "useDifferentColor": false,
+        "className": "",
+        "x": 4070,
+        "y": 520,
+        "wires": [
+            [
+                "1be19e8fa11caeb9"
+            ]
+        ]
+    },
+    {
+        "id": "aca495c94758ffcd",
+        "type": "function",
+        "z": "7357803c4d09633b",
+        "name": "CreateEmployeesStatusBarChart",
+        "func": "console.log(\"inside chart\")\nconsole.log(global.get(\"presentees\"))\nconsole.log(global.get(\"inside_office\"))\n\nvar outside_people = global.get(\"presentees\") - global.get(\"inside_office\")\nmsg = {\n    payload: [\n        {\n            labels: [\"insideEmployees\", \"outsideEmployees\"],\n            data:[[global.get(\"inside_office\"),outside_people]],\n            series: [\"Employ's status\"]\n        }]\n            \n}\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 3800,
+        "y": 520,
+        "wires": [
+            [
+                "d493af1bcbaf3ac3"
+            ]
+        ]
+    },
+    {
+        "id": "80acec4afddda03e",
+        "type": "inject",
+        "z": "7357803c4d09633b",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "5",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 3530,
+        "y": 520,
+        "wires": [
+            [
+                "aca495c94758ffcd"
+            ]
+        ]
+    },
+    {
+        "id": "8fb4b4e1f5485676",
+        "type": "azureiotdevice",
+        "z": "7357803c4d09633b",
+        "deviceid": "2ow5a40f2a8",
+        "pnpModelid": "",
+        "connectiontype": "dps",
+        "authenticationmethod": "sas",
+        "iothub": "",
+        "isIotcentral": true,
+        "scopeid": "0ne009703B6",
+        "enrollmenttype": "device",
+        "saskey": "e+KfvZ0tXBAJlwEtSyasLXpyVcd8RQ3/q4Ns23m+B70=",
+        "certname": "",
+        "keyname": "",
+        "passphrase": "",
+        "protocol": "mqtt",
+        "retryInterval": 10,
+        "methods": [],
+        "DPSpayload": "",
+        "gatewayHostname": "",
+        "caname": "",
+        "cert": "",
+        "key": "",
+        "ca": "",
+        "x": 1360,
+        "y": 600,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "c9a547ab12d8b025",
+        "type": "grove digital sensor",
+        "z": "7357803c4d09633b",
+        "name": "Home Office Temperature",
+        "board": "9916b831352fab02",
+        "sensor": "dht11",
+        "repeat": "5",
+        "pin": "8",
+        "x": 150,
+        "y": 540,
+        "wires": [
+            [
+                "0d342ca0ae24a859"
+            ]
+        ]
+    },
+    {
+        "id": "0d342ca0ae24a859",
+        "type": "delay",
+        "z": "7357803c4d09633b",
+        "name": "Set Rate",
+        "pauseType": "rate",
+        "timeout": "5",
+        "timeoutUnits": "seconds",
+        "rate": "1",
+        "nbRateUnits": "5",
+        "rateUnits": "second",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": false,
+        "allowrate": false,
+        "outputs": 1,
+        "x": 400,
+        "y": 540,
+        "wires": [
+            [
+                "fa08b3a41b7e1a83"
+            ]
+        ]
+    },
+    {
+        "id": "fa08b3a41b7e1a83",
+        "type": "function",
+        "z": "7357803c4d09633b",
+        "name": "set interaction type",
+        "func": "msg.topic = 'telemetry'; \nmsg.payload = msg.payload ;\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 630,
+        "y": 540,
+        "wires": [
+            [
+                "8fb4b4e1f5485676"
+            ]
+        ]
+    },
+    {
+        "id": "fabaae1602c669dc",
+        "type": "grove analog sensor",
+        "z": "7357803c4d09633b",
+        "name": "Sound Sensor",
+        "pin": "1",
+        "sensor": "sound",
+        "repeat": "3",
+        "board": "869bc48d80968c0b",
+        "x": 110,
+        "y": 620,
+        "wires": [
+            [
+                "ca639c4a4972fdac"
+            ]
+        ]
+    },
+    {
+        "id": "ca639c4a4972fdac",
+        "type": "delay",
+        "z": "7357803c4d09633b",
+        "name": "Set Rate",
+        "pauseType": "rate",
+        "timeout": "5",
+        "timeoutUnits": "seconds",
+        "rate": "1",
+        "nbRateUnits": "10",
+        "rateUnits": "second",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": false,
+        "allowrate": false,
+        "outputs": 1,
+        "x": 360,
+        "y": 620,
+        "wires": [
+            [
+                "0b84e3c375f41419"
+            ]
+        ]
+    },
+    {
+        "id": "0b84e3c375f41419",
+        "type": "function",
+        "z": "7357803c4d09633b",
+        "name": "set interaction type",
+        "func": "msg.topic = 'telemetry'; \nmsg.payload ={sound:parseInt(msg.payload)};\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 630,
+        "y": 620,
+        "wires": [
+            [
+                "8fb4b4e1f5485676"
+            ]
+        ]
+    },
+    {
+        "id": "2e0b7a251c4f772a",
+        "type": "function",
+        "z": "7357803c4d09633b",
+        "name": "EmergencySound",
+        "func": "if(msg.payload==true){\n    msg.payload=\"Emergency, come out of the building\";\n}\nelse{\n    msg.payload=\"\";\n}\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 410,
+        "y": 760,
+        "wires": [
+            [
+                "961c9754f85c3b3c"
+            ]
+        ]
+    },
+    {
+        "id": "961c9754f85c3b3c",
+        "type": "play audio",
+        "z": "7357803c4d09633b",
+        "name": "speaker out Emergency",
+        "voice": "0",
+        "x": 630,
+        "y": 760,
+        "wires": []
+    },
+    {
+        "id": "69475c3d331689b0",
+        "type": "grove digital sensor",
+        "z": "7357803c4d09633b",
+        "name": "Button for emergency",
+        "board": "869bc48d80968c0b",
+        "sensor": "button",
+        "repeat": "1",
+        "pin": "3",
+        "x": 140,
+        "y": 740,
+        "wires": [
+            [
+                "2e0b7a251c4f772a",
+                "7328975671683f5c"
+            ]
+        ]
+    },
+    {
+        "id": "7328975671683f5c",
+        "type": "function",
+        "z": "7357803c4d09633b",
+        "name": "SetEmergencyTrueforOnemin",
+        "func": "\nvar end_time = context.get(\"end_time\")\nvar d = new Date()\nvar emergency = context.get(\"emergency\")\nif (typeof emergency == \"undefined\") {\n    emergency = false\n}\n\nif (msg.payload == true) {\n    msg.payload = \"ON\"\n    var start_time = d.getTime()\n    context.set(\"start_time\", start_time)\n    end_time = start_time + 30000\n    context.set(\"end_time\", end_time)\n    context.set(\"emergency\", \"ON\")\n    console.log(start_time, end_time)\n    return msg\n}\nelse {\n    msg.payload = context.get(\"emergency\")\n}\n\nif (d.getTime() > end_time) {\n    console.log(\"yes\")\n    msg.payload = \"OFF\"\n    context.set(\"emergency\", \"OFF\")\n    return msg\n}\n\nreturn msg",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 450,
+        "y": 700,
+        "wires": [
+            [
+                "bf34816390fbdc13"
+            ]
+        ]
+    },
+    {
+        "id": "bf34816390fbdc13",
+        "type": "delay",
+        "z": "7357803c4d09633b",
+        "name": "",
+        "pauseType": "rate",
+        "timeout": "5",
+        "timeoutUnits": "seconds",
+        "rate": "1",
+        "nbRateUnits": "1",
+        "rateUnits": "second",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": false,
+        "allowrate": false,
+        "outputs": 1,
+        "x": 670,
+        "y": 700,
+        "wires": [
+            [
+                "86d5048466430e1a"
+            ]
+        ]
+    },
+    {
+        "id": "86d5048466430e1a",
+        "type": "function",
+        "z": "7357803c4d09633b",
+        "name": "set interaction type",
+        "func": "msg.topic = 'telemetry'; \nmsg.payload = {emergency: msg.payload };\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 850,
+        "y": 700,
+        "wires": [
+            [
+                "8fb4b4e1f5485676"
+            ]
+        ]
+    },
+    {
+        "id": "a243d46695a74b5f",
+        "type": "function",
+        "z": "7357803c4d09633b",
+        "name": "sendStatusToAzure",
+        "func": "msg.topic = \"telemetry\"\n\nmsg.payload ={status: msg.status}\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 870,
+        "y": 500,
+        "wires": [
+            [
+                "8fb4b4e1f5485676"
+            ]
+        ]
+    },
+    {
+        "id": "9d16f345a3704dfd",
+        "type": "ui_text",
+        "z": "7357803c4d09633b",
+        "group": "66e2ae3d5236b683",
+        "order": 2,
+        "width": 6,
+        "height": 1,
+        "name": "Recently Exited",
+        "label": "Recently Exited",
+        "format": "{{msg.payload[0].name}}",
+        "layout": "row-spread",
+        "className": "",
+        "x": 2540,
+        "y": 1040,
+        "wires": []
+    },
+    {
+        "id": "c0ccfe44e0895548",
+        "type": "debug",
+        "z": "7357803c4d09633b",
+        "name": "debug 69",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 2440,
+        "y": 300,
+        "wires": []
+    },
+    {
+        "id": "09126b0239d49afe",
+        "type": "comment",
+        "z": "7357803c4d09633b",
+        "name": "DATABASE NODES",
+        "info": "",
+        "x": 2090,
+        "y": 80,
+        "wires": []
+    },
+    {
+        "id": "efec1973c94390da",
+        "type": "comment",
+        "z": "7357803c4d09633b",
+        "name": "CAMERA AND AZURE DEVICE NODES",
+        "info": "",
+        "x": 720,
+        "y": 160,
+        "wires": []
+    },
+    {
+        "id": "c3a658e6ace450ad",
+        "type": "comment",
+        "z": "7357803c4d09633b",
+        "name": "Send Twillio Message to Employee If they havent Exited after office hour",
+        "info": "",
+        "x": 470,
+        "y": 940,
+        "wires": []
+    },
+    {
+        "id": "1be58c235e24eac5",
+        "type": "comment",
+        "z": "7357803c4d09633b",
+        "name": "BAR CHARTS NODES",
+        "info": "",
+        "x": 3680,
+        "y": 400,
+        "wires": []
+    },
+    {
+        "id": "4e33f03abc535d36",
+        "type": "function",
+        "z": "7357803c4d09633b",
+        "name": "Entryemployee",
+        "func": "msg.topic = `select EmpId from Attendance group by date_column,EmpId having count(status)%2 == 1`\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 260,
+        "y": 1220,
+        "wires": [
+            [
+                "6542d2f06c2dd781"
+            ]
+        ]
+    },
+    {
+        "id": "6542d2f06c2dd781",
+        "type": "sqlite",
+        "z": "7357803c4d09633b",
+        "mydb": "5f1becd9ddccee82",
+        "sqlquery": "msg.topic",
+        "sql": "",
+        "name": "",
+        "x": 460,
+        "y": 1220,
+        "wires": [
+            [
+                "5b18b905f0cdc079"
+            ]
+        ]
+    },
+    {
+        "id": "5b18b905f0cdc079",
+        "type": "function",
+        "z": "7357803c4d09633b",
+        "name": "getCountOfInsideEmployee",
+        "func": "var insideOffice= []\narr = msg.payload\nfor (let i = 0; i < msg.payload.length; i++) {\n    insideOffice.push(arr[i].EmpID);\n}\n// console.log(insideOffice.toString())\nvar arr = insideOffice.toString()\nmsg.payload = [insideOffice]\nconsole.log(msg.payload)\nconsole.log(`what is this ${insideOffice}`)\nmsg.topic = `select contact_no from Employee where EmpId in ( ${insideOffice.join(',')})`\nmsg.inside_employee = insideOffice.length\nglobal.set(\"inside_office\", insideOffice.length)\nconsole.log(\"inside Office\")\nconsole.log(insideOffice.length)\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 700,
+        "y": 1220,
+        "wires": [
+            [
+                "ec455e43f91b40f3"
+            ]
+        ]
+    },
+    {
+        "id": "ec455e43f91b40f3",
+        "type": "function",
+        "z": "7357803c4d09633b",
+        "name": "LightStatus",
+        "func": "if (msg.inside_employee > 0){\n    msg.payload = true\n}\nelse {\n    msg.payload = false\n}\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 950,
+        "y": 1220,
+        "wires": [
+            [
+                "a23da15e2b1bdbd1"
+            ]
+        ]
+    },
+    {
+        "id": "a23da15e2b1bdbd1",
+        "type": "grove digital output",
+        "z": "7357803c4d09633b",
+        "name": "OfficeLight",
+        "board": "9916b831352fab02",
+        "pin": "6",
+        "x": 1170,
+        "y": 1220,
+        "wires": []
+    },
+    {
+        "id": "84f9b9d20caa21d6",
+        "type": "inject",
+        "z": "7357803c4d09633b",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "5",
+        "crontab": "",
+        "once": true,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 90,
+        "y": 1220,
+        "wires": [
+            [
+                "4e33f03abc535d36"
+            ]
+        ]
+    },
+    {
+        "id": "7f5849c883bc1699",
+        "type": "comment",
+        "z": "7357803c4d09633b",
+        "name": "Turn on Lights if there is someone inside office and turn off after everyone exit",
+        "info": "",
+        "x": 390,
+        "y": 1160,
+        "wires": []
+    },
+    {
+        "id": "bac2e196305fdb04",
+        "type": "play audio",
+        "z": "7357803c4d09633b",
+        "name": "",
+        "voice": "",
+        "x": 1450,
+        "y": 500,
+        "wires": []
+    },
+    {
+        "id": "1be19e8fa11caeb9",
+        "type": "debug",
+        "z": "7357803c4d09633b",
+        "name": "debug 70",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 4260,
+        "y": 520,
+        "wires": []
+    },
+    {
+        "id": "7e9ce597d3478b63",
+        "type": "comment",
+        "z": "7357803c4d09633b",
+        "name": "CreateBarGraph for Inside office and Outside Office",
+        "info": "",
+        "x": 3630,
+        "y": 480,
+        "wires": []
+    },
+    {
+        "id": "a714d7d757341002",
+        "type": "function",
+        "z": "7357803c4d09633b",
+        "name": "SetMessage",
+        "func": "\nif(msg.status == \"entry\"){\n    msg.payload = `Hi ${global.get(\"person\")}`\n}\nelse{\n    msg.payload = `See you  ${global.get(\"person\")}`\n}\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1210,
+        "y": 500,
+        "wires": [
+            [
+                "bac2e196305fdb04"
+            ]
+        ]
+    },
+    {
+        "id": "4fb6b78cec9967fe",
+        "type": "ui_spacer",
+        "z": "7357803c4d09633b",
+        "name": "spacer",
+        "group": "4c7ffeb7dc3854ed",
+        "order": 2,
+        "width": 1,
+        "height": 1
+    },
+    {
+        "id": "43b995b2cbafed26",
+        "type": "ui_spacer",
+        "z": "7357803c4d09633b",
+        "name": "spacer",
+        "group": "4c7ffeb7dc3854ed",
+        "order": 3,
+        "width": 1,
+        "height": 1
+    },
+    {
+        "id": "858fd380ad08cc58",
+        "type": "ui_spacer",
+        "z": "7357803c4d09633b",
+        "name": "spacer",
+        "group": "4c7ffeb7dc3854ed",
+        "order": 4,
+        "width": 1,
+        "height": 1
+    },
+    {
+        "id": "778c757b123646c6",
+        "type": "ui_spacer",
+        "z": "7357803c4d09633b",
+        "name": "spacer",
+        "group": "4c7ffeb7dc3854ed",
+        "order": 5,
+        "width": 1,
+        "height": 1
+    },
+    {
+        "id": "f93caa604765ee58",
+        "type": "ui_spacer",
+        "z": "7357803c4d09633b",
+        "name": "spacer",
+        "group": "4c7ffeb7dc3854ed",
+        "order": 6,
+        "width": 1,
+        "height": 1
+    },
+    {
+        "id": "26ca5b509ff420ae",
+        "type": "ui_spacer",
+        "z": "7357803c4d09633b",
+        "name": "spacer",
+        "group": "66e2ae3d5236b683",
+        "order": 3,
+        "width": "1",
+        "height": "2"
+    },
+    {
+        "id": "5f1becd9ddccee82",
+        "type": "sqlitedb",
+        "db": "./Employee.db",
+        "mode": "RWC"
+    },
+    {
+        "id": "951e49c911dbaec6",
+        "type": "twilio-api",
+        "name": "",
+        "sid": "AC6d52cf54e4600a0f40a1f5bb060912ce",
+        "from": "+18336590321"
+    },
+    {
+        "id": "69ad816514f35c84",
+        "type": "board-config",
+        "board": "GrovePi"
+    },
+    {
+        "id": "4c7ffeb7dc3854ed",
+        "type": "ui_group",
+        "name": "Employees Attendance",
+        "tab": "da16a2d2dc746a46",
+        "order": 1,
+        "disp": true,
+        "width": 6,
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "66e2ae3d5236b683",
+        "type": "ui_group",
+        "name": "RecentEntry",
+        "tab": "da16a2d2dc746a46",
+        "order": 3,
+        "disp": true,
+        "width": 6,
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "1461091383aac6f5",
+        "type": "ui_group",
+        "name": "Arrival pattern",
+        "tab": "da16a2d2dc746a46",
+        "order": 5,
+        "disp": true,
+        "width": 18,
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "9e7777ab31d79853",
+        "type": "ui_group",
+        "name": "Employee Inside Office",
+        "tab": "da16a2d2dc746a46",
+        "order": 2,
+        "disp": true,
+        "width": "6",
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "9916b831352fab02",
+        "type": "board-config",
+        "board": "GrovePi"
+    },
+    {
+        "id": "869bc48d80968c0b",
+        "type": "board-config",
+        "board": "GrovePi"
+    },
+    {
+        "id": "da16a2d2dc746a46",
+        "type": "ui_tab",
+        "name": "Employee Monitoring Dashboard",
+        "icon": "dashboard",
+        "order": 1,
+        "disabled": false,
+        "hidden": false,
+        "info": "<h1 ng-show=\"!(main.lockMenu != 'false') &amp;&amp; main.loaded\" node-id=\"da16a2d2dc746a46\" aria-hidden=\"false\">                 Employee Monitoring Dashboard</h1>"
+    }
+]
