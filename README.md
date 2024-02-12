@@ -1,4 +1,4 @@
-** System Architecture Diagram **
+**System Architecture Diagram**
 
 ![alt text](./sys_arch.jpeg?raw=true)
 <b> Employee Attendance and  Moniteering at Office </b> 
