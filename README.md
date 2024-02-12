@@ -1,4 +1,6 @@
+** System Architecture Diagram **
 
+![alt text](./sys_arch.jpeg?raw=true)
 <b> Employee Attendance and  Moniteering at Office </b> 
 
 **Installation** (If you do not have node red installed and the nodes already installed) <br> 
